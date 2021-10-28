@@ -12,6 +12,14 @@ const textInputDecoration = InputDecoration(
   ),
 );
 
-const textStyleAppBar = TextStyle(
-  color: Colors.black
-);
+const textStyleAppBar =
+    TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 25);
+
+const titleAppBar = 'Praktikumsbewerbung';
+
+
+const textStyle =
+    TextStyle(color: Colors.black, fontWeight: FontWeight.normal, fontSize: 16);
+
+const buttonTextStyle =
+    TextStyle(color: Colors.white, fontWeight: FontWeight.normal, fontSize: 20);
