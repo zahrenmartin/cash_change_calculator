@@ -31,9 +31,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-final List<String> age = ['_cashEuroCent','_cashUSD'];
+final List<String> currency = ['Euro','USD'];
 
-String? _currentAge;
+List<double> _currencySelected = [50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];//Mögliche Euro-Geld-Varianten in Euro (Scheine und Münzen)
+
+
+String? _currentCurrency = 'Euro';
 
   String? _payedMoney;
   String? _price;
@@ -47,9 +50,25 @@ String? _currentAge;
   final List<double> _cashUSD = [100000, 50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];//Mögliche USD-Geld-Varianten in Dollar (Scheine und Münzen)
       
   
+  void selectCurrency(){
+    if (_currentCurrency == 'Euro'){
+      setState(() {
+        _currencySelected = _cashEuroCent;
+      });
+    } else {
+      if (_currentCurrency == 'USD'){
+        setState(() {
+          _currencySelected = _cashUSD;
+        });
+      }
+    }
+  }
 
 //check why async and if it is really necessary and why!
   void _changeResult() async {
+    selectCurrency();
+
+
     if ((_payedMoney == null)){
       setState(() {
         _payedMoney = 0.toString();
@@ -66,6 +85,7 @@ String? _currentAge;
     _price=_price?.replaceAll(',', '.');
 
     bool isNumeric(String s) {
+      // ignore: unnecessary_null_comparison
       if (s == null) {
         return false;
       }
@@ -88,7 +108,7 @@ String? _currentAge;
     if (((double.parse(_payedMoney!)*100).toInt()) < ((double.parse(_price!)*100).toInt())){//Wenn der Kunden zu wenig Geld gezahlt hat:
     } else {
       setState(() {
-        changeComposition(totalChange(((double.parse(_payedMoney!)*100).toInt()).toString(), ((double.parse(_price!)*100).toInt()).toString())!, _cashEuroCent, _changeCoinsAndBills);
+        changeComposition(totalChange(((double.parse(_payedMoney!)*100).toInt()).toString(), ((double.parse(_price!)*100).toInt()).toString())!, _currencySelected, _changeCoinsAndBills);
       });
     }
     replyToCustomer(_payedMoney, _price, _answer);
@@ -108,11 +128,11 @@ String? _currentAge;
     else {
       if (double.parse(eingabeschein!)< double.parse(preis!)){//Wenn der Kunden zu wenig Geld gezahlt hat:
         setState(() {
-          _answer = ("Sie müssen noch "+double.parse(calcdebt(eingabeschein!, preis)!).toStringAsFixed(2)+ " Euro zahlen!");
+          _answer = ("Sie müssen noch "+double.parse(calcdebt(eingabeschein!, preis)!).toStringAsFixed(2)+' '+ _currentCurrency!+ " zahlen!");
         });
       } else {
         setState(() {
-          _answer = ("Sie kriegen "+double.parse(totalChange(eingabeschein!, preis!)!).toStringAsFixed(2)+ " Euro zurück!");
+          _answer = ("Sie kriegen "+double.parse(totalChange(eingabeschein!, preis!)!).toStringAsFixed(2)+' '+_currentCurrency!+ " zurück!");
           });
       }}
     }
@@ -153,23 +173,24 @@ String? _currentAge;
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
 
-              Container(
-                              width: MediaQuery.of(context).size.width * .28,
-                              child: DropdownButtonFormField(
-                                value: _currentAge ?? '_cashEuroCent',
-                                decoration: textInputDecoration,
-                                items: age.map((age) {
-                                  return DropdownMenuItem(
-                                    value: age,
-                                    child: Text('$age'),
-                                  );
-                                }).toList(),
-                                onChanged: (val) => setState(() => _currentAge = val as String ),
-                              ),
-                            ),
+              SizedBox(
+                width: MediaQuery.of(context).size.width * .5,
+                child: DropdownButtonFormField(
+                  value: _currentCurrency,
+                  decoration: textInputDecoration,
+                  items: currency.map((currency) {
+                    return DropdownMenuItem(
+                      value: currency,
+                      child: Text(currency),
+                    );
+                  }).toList(),
+                  onChanged: (val) => setState(() => _currentCurrency = val as String ),
+                ),
+              ),
 
-                            _currentAge == null ? Container(width: 1,height: 1,):Text(_currentAge!),
-
+              _currentCurrency == null 
+              ? const SizedBox(width: 1,height: 1,) 
+              : Text(_currentCurrency!),
 
 
               Padding(
@@ -183,11 +204,11 @@ String? _currentAge;
                           SizedBox(
                             width: MediaQuery.of(context).size.width * .4,
                       height: MediaQuery.of(context).size.width * .09,
-                            child: const Text('Preis in Euro: ', style: textStyle,)),
+                            child:  Text('Preis in '+_currentCurrency!+':', style: textStyle,)),
                           SizedBox(
                             width: MediaQuery.of(context).size.width * .4,
                       height: MediaQuery.of(context).size.width * .09,
-                            child: const Text('Eingabe in Euro: ', style: textStyle,)),
+                            child:  Text('Eingabe in '+_currentCurrency!+':', style: textStyle,)),
                     ],),
 
                     Column(children: [
@@ -264,7 +285,7 @@ String? _currentAge;
                     final item = _changeCoinsAndBills[index];
       
                     return ListTile(
-                      title: Text((item/100).toString()+' Euro', style: textStyle),
+                      title: Text((item/100).toString()+' '+_currentCurrency!, style: textStyle),
                     
                     );
                   },
