@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 const textInputDecoration = InputDecoration(
   fillColor: Colors.blueGrey,
   filled: true,
@@ -15,7 +16,7 @@ const textInputDecoration = InputDecoration(
 const textStyleAppBar =
     TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 25);
 
-const titleAppBar = 'Praktikumsbewerbung';
+const titleAppBar = 'Change Calculator';
 
 
 const textStyle =

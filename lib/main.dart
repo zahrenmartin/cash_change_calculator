@@ -30,6 +30,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
+final List<String> age = ['_cashEuroCent','_cashUSD'];
+
+String? _currentAge;
+
   String? _payedMoney;
   String? _price;
   String? _debt;
@@ -38,34 +43,78 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
   final List<double>_changeCoinsAndBills = [];
-  final List<double> _cashEuroCent = [500, 200, 100, 50, 20, 10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01];//Mögliche Euro-Geld-Varianten in Euro (Scheine und Münzen)
+  final List<double> _cashEuroCent = [50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];//Mögliche Euro-Geld-Varianten in Euro (Scheine und Münzen)
+  final List<double> _cashUSD = [100000, 50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];//Mögliche USD-Geld-Varianten in Dollar (Scheine und Münzen)
       
+  
 
-
-
+//check why async and if it is really necessary and why!
   void _changeResult() async {
-    _changeCoinsAndBills.clear();//vorherige Geld-Kombination löschen
-    if (double.parse(_payedMoney!)< double.parse(_price!)){//Wenn der Kunden zu wenig Geld gezahlt hat:
-    } else {
+    if ((_payedMoney == null)){
       setState(() {
-        changeComposition(totalChange(_payedMoney!, _price!)!, _cashEuroCent, _changeCoinsAndBills);
+        _payedMoney = 0.toString();
       });
     }
-    replyToCustomer(_payedMoney, _price);
-  }
 
-  //if Preis=Eingabe => "Thank you"
-
-
-  replyToCustomer(eingabeschein, preis){
-    if (double.parse(eingabeschein!)< double.parse(preis!)){//Wenn der Kunden zu wenig Geld gezahlt hat:
+    if ((_price == null)){
       setState(() {
-        _answer = ("Sie müssen noch "+double.parse(calcdebt(eingabeschein!, preis)!).toStringAsFixed(2)+ " Euro zahlen!");
+        _price = 0.toString();
+      });
+    }
+
+    _payedMoney=_payedMoney?.replaceAll(',', '.');
+    _price=_price?.replaceAll(',', '.');
+
+    bool isNumeric(String s) {
+      if (s == null) {
+        return false;
+      }
+      return double.tryParse(s) != null;
+    }
+
+    if ((isNumeric(_payedMoney!)==false)| (isNumeric(_price!)==false)){
+      setState(() {
+        _payedMoney=0.toString();
+        _price=0.toString();
+        _answer = 'error';
       });
     } else {
       setState(() {
-        _answer = ("Sie kriegen "+double.parse(totalChange(eingabeschein!, preis!)!).toStringAsFixed(2)+ " Euro zurück!");
-         });
+        _payedMoney=_payedMoney;
+      });
+    }
+  
+    _changeCoinsAndBills.clear();//vorherige Geld-Kombination löschen
+    if (((double.parse(_payedMoney!)*100).toInt()) < ((double.parse(_price!)*100).toInt())){//Wenn der Kunden zu wenig Geld gezahlt hat:
+    } else {
+      setState(() {
+        changeComposition(totalChange(((double.parse(_payedMoney!)*100).toInt()).toString(), ((double.parse(_price!)*100).toInt()).toString())!, _cashEuroCent, _changeCoinsAndBills);
+      });
+    }
+    replyToCustomer(_payedMoney, _price, _answer);
+  }
+
+  replyToCustomer(eingabeschein, preis, answer){
+    if (answer == 'error') {
+      setState(() {
+        _answer = ("Ihre Eingabe ist fehlerhaft!");
+      });
+    } else {
+      if (double.parse(eingabeschein!)==double.parse(preis!)){//Wenn der Kunden zu wenig Geld gezahlt hat:
+            setState(() {
+              _answer = ("Vielen Dank!");
+            });
+    }
+    else {
+      if (double.parse(eingabeschein!)< double.parse(preis!)){//Wenn der Kunden zu wenig Geld gezahlt hat:
+        setState(() {
+          _answer = ("Sie müssen noch "+double.parse(calcdebt(eingabeschein!, preis)!).toStringAsFixed(2)+ " Euro zahlen!");
+        });
+      } else {
+        setState(() {
+          _answer = ("Sie kriegen "+double.parse(totalChange(eingabeschein!, preis!)!).toStringAsFixed(2)+ " Euro zurück!");
+          });
+      }}
     }
   }
 
@@ -103,6 +152,26 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+
+              Container(
+                              width: MediaQuery.of(context).size.width * .28,
+                              child: DropdownButtonFormField(
+                                value: _currentAge ?? '_cashEuroCent',
+                                decoration: textInputDecoration,
+                                items: age.map((age) {
+                                  return DropdownMenuItem(
+                                    value: age,
+                                    child: Text('$age'),
+                                  );
+                                }).toList(),
+                                onChanged: (val) => setState(() => _currentAge = val as String ),
+                              ),
+                            ),
+
+                            _currentAge == null ? Container(width: 1,height: 1,):Text(_currentAge!),
+
+
+
               Padding(
                 padding: const EdgeInsets.all(28.0),
                 child: Row(
@@ -127,7 +196,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       height: MediaQuery.of(context).size.width * .1,
       
                       child: TextFormField(
-                        initialValue: 0.toString(),
+                        initialValue: ''.toString(),
                         decoration: textInputDecoration,
                         validator: (val) => val!.isEmpty ? 'Please enter the price' : null,
                         onChanged: (val) => setState(() => _price = val),
@@ -144,7 +213,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       height: MediaQuery.of(context).size.width * .1,
       
                       child: TextFormField(
-                        initialValue: 0.toString(),
+                        initialValue: ''.toString(),
                         decoration: textInputDecoration,
                         validator: (val) => val!.isEmpty ? 'Please enter the amount paid' : null,
                         onChanged: (val) => setState(() => _payedMoney = val),
@@ -163,11 +232,27 @@ class _MyHomePageState extends State<MyHomePage> {
       
               Text(_answer.toString(), style: textStyle),//Ergebnis
       
-              ElevatedButton(
-                child: const Text('Calculate', style: buttonTextStyle,),
-                onPressed: (){
-                _changeResult();
-              }),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    
+                    (_answer == 'error'||_answer == "Ihre Eingabe ist fehlerhaft!") ? ElevatedButton(
+                      child: const Text('Reset', style: buttonTextStyle,),
+                      onPressed: (){
+                      
+                      Navigator.pushReplacement(context, MaterialPageRoute(
+                          builder: (BuildContext context) => super.widget)
+                      );
+                    }):ElevatedButton(
+                      child: const Text('Calculate', style: buttonTextStyle,),
+                      onPressed: (){
+                      _changeResult();
+                    }),
+                  ],
+                ),
+              ),
       
               SizedBox(
                 width: MediaQuery.of(context).size.width * .4,
@@ -179,7 +264,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     final item = _changeCoinsAndBills[index];
       
                     return ListTile(
-                      title: Text(item.toString()+' Euro', style: textStyle),
+                      title: Text((item/100).toString()+' Euro', style: textStyle),
                     
                     );
                   },
