@@ -46,7 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (double.parse(_payedMoney!)< double.parse(_price!)){//Wenn der Kunden zu wenig Geld gezahlt hat:
     } else {
       setState(() {
-        rueckgeldzusammensetzung(totalChange(_payedMoney!, _price!)!, _cashEuroCent, _changeCoinsAndBills);
+        changeComposition(totalChange(_payedMoney!, _price!)!, _cashEuroCent, _changeCoinsAndBills);
       });
     }
     replyToCustomer(_payedMoney, _price);
@@ -77,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
      return _totalChange!;
   }
 
-  rueckgeldzusammensetzung(String _rueckgeld, List<double> _geldineuro, List<double>_rueckgeldscheineundmuenzen) { //Funktion zur Berechnung der Rückgeld-Kombination
+  changeComposition(String _rueckgeld, List<double> _geldineuro, List<double>_rueckgeldscheineundmuenzen) { //Funktion zur Berechnung der Rückgeld-Kombination
       for (double i in _geldineuro) {//Loop durch jede Mögliche Euro-Geld-Variante
         while ((double.parse(_rueckgeld)) >= i) {//So lange restlicher Rückgeldbetrag kleiner gleich Euro-Geld-Variante: 
             _rueckgeldscheineundmuenzen.add(i); //Euro-Geld-Variante wird der Rückgeldliste hinzugefügt.
