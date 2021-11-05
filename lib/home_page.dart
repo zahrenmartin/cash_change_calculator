@@ -35,37 +35,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
   void selectCurrency(){
-    (_currentCurrency == 'EUR')?
-    setState(() {
-      _currencySelected = _cashEUR;
-    }):(_currentCurrency == 'USD')?
-    setState(() {
-      _currencySelected = _cashUSD;
-    }):(_currentCurrency == 'GBP')?
-    setState(() {
-      _currencySelected = _cashGBP;
-    }):(_currentCurrency == 'JPY')?
-    setState(() {
-      _currencySelected = _cashJPY;
-    }):(_currentCurrency == 'KRW')?
-    setState(() {
-      _currencySelected = _cashKRW;
-    }):(_currentCurrency == 'RUB')?
-    setState(() {
-      _currencySelected = _cashRUB;
-    }):(_currentCurrency == 'CNY')?
-    setState(() {
-      _currencySelected = _cashCNY;
-    }):(_currentCurrency == 'INR')?
-    setState(() {
-      _currencySelected = _cashINR;
-    }):(_currentCurrency == 'CHF')?
-    setState(() {
-      _currencySelected = _cashCHF;
-    }):
-    setState(() {
-      _currencySelected = _cashSEK;
-    });    
+    (_currentCurrency == 'EUR') ? setState(() { _currencySelected = _cashEUR; }) :
+    (_currentCurrency == 'USD') ? setState(() { _currencySelected = _cashUSD; }) :
+    (_currentCurrency == 'GBP') ? setState(() { _currencySelected = _cashGBP; }) :
+    (_currentCurrency == 'JPY') ? setState(() { _currencySelected = _cashJPY; }) :
+    (_currentCurrency == 'KRW') ? setState(() { _currencySelected = _cashKRW; }) :
+    (_currentCurrency == 'RUB') ? setState(() { _currencySelected = _cashRUB; }) :
+    (_currentCurrency == 'CNY') ? setState(() { _currencySelected = _cashCNY; }) :
+    (_currentCurrency == 'INR') ? setState(() { _currencySelected = _cashINR; }) :
+    (_currentCurrency == 'CHF') ? setState(() { _currencySelected = _cashCHF; }) :
+                                  setState(() { _currencySelected = _cashSEK; });    
   }
 
   setPayedMoneyNotNull(){
@@ -84,45 +63,31 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-replaceCommaWithPoint(){
-  _payedMoney=_payedMoney?.replaceAll(',', '.');
-  _price=_price?.replaceAll(',', '.');
-}
+  replaceCommaWithPoint(){
+    _payedMoney=_payedMoney?.replaceAll(',', '.');
+    _price=_price?.replaceAll(',', '.');
+  }
 
-void _changeResult() {
-    selectCurrency();
-    setPayedMoneyNotNull();
-    setPriceNotNull();
-    replaceCommaWithPoint();
+  setPayedMoneyAndPriceNumeric(){
+    bool isNumeric(String s) { if (s == null) {
+      return false;
+      } return double.tryParse(s) != null;
+        } if ((isNumeric(_payedMoney!)==false)|(isNumeric(_price!)==false)){
+          setState(() {
+            _payedMoney=0.toString();
+            _price=0.toString();
+            _answer = 'error';
+          });} 
+  }
 
-    bool isNumeric(String s) { 
-      // ignore: unnecessary_null_comparison
-      if (s == null) {return false;
-      }
-      return double.tryParse(s) != null;
-    }
-    if ((isNumeric(_payedMoney!)==false)| (isNumeric(_price!)==false)){
-      setState(() {
-        _payedMoney=0.toString();
-        _price=0.toString();
-        _answer = 'error';
-      });
-    } else {
-      setState(() {
-        _payedMoney=_payedMoney;
-      });
-    }
-  
-    _changeCoinsAndBills.clear();//vorherige Geld-Kombination löschen
+  checkIfEnoughPayedAndThenChangeComposition(){
     if (((double.parse(_payedMoney!)*100).toInt()) < ((double.parse(_price!)*100).toInt())){//Wenn der Kunden zu wenig Geld gezahlt hat:
     } else {
       setState(() {
         changeComposition(totalChange(((double.parse(_payedMoney!)*100).toInt()).toString(), ((double.parse(_price!)*100).toInt()).toString())!, _currencySelected, _changeCoinsAndBills);
       });
     }
-    replyToCustomer(_payedMoney, _price, _answer);
   }
-
 
   String? calcdebt(String eingabeschein, String preis){
       _debt = (double.parse(preis) - double.parse(eingabeschein)).toString();//Restlich zu zahlenden Betrag berechnen
@@ -134,37 +99,36 @@ void _changeResult() {
      return _totalChange!;
   }
 
-  changeComposition(String _rueckgeld, List<double> _geldineuro, List<double>_rueckgeldscheineundmuenzen) { //Funktion zur Berechnung der Rückgeld-Kombination
-      for (double i in _geldineuro) {//Loop durch jede Mögliche Euro-Geld-Variante
-        while ((double.parse(_rueckgeld)) >= i) {//So lange restlicher Rückgeldbetrag kleiner gleich Euro-Geld-Variante: 
-            _rueckgeldscheineundmuenzen.add(i); //Euro-Geld-Variante wird der Rückgeldliste hinzugefügt.
-            _rueckgeld = (double.parse(_rueckgeld) - i).toString(); //Restlicher Rückgeldbetrag wird berechnet.
+  changeComposition(String _change, List<double> _cashEUR, List<double>_changeCoinsAndBills) { //Funktion zur Berechnung der Rückgeld-Kombination
+      for (double i in _cashEUR) {//Loop durch jede Mögliche Euro-Geld-Variante
+        while ((double.parse(_change)) >= i) {//So lange restlicher Rückgeldbetrag kleiner gleich Euro-Geld-Variante: 
+            _changeCoinsAndBills.add(i); //Euro-Geld-Variante wird der Rückgeldliste hinzugefügt.
+            _change = (double.parse(_change) - i).toString(); //Restlicher Rückgeldbetrag wird berechnet.
         }
       }
   }
 
-  replyToCustomer(eingabeschein, preis, answer){
-    if (answer == 'error') {
-      setState(() {
-        _answer = ("Ihre Eingabe ist fehlerhaft!");
-      });
-    } else {
-      if (double.parse(eingabeschein!)==double.parse(preis!)){//Wenn der Kunden zu wenig Geld gezahlt hat:
+  replyToCustomer(payedmoney, price, answer){
+    (answer == 'error') ? setState(() { _answer = errorText; })
+    :   (double.parse(payedmoney!) == double.parse(price!)) ?//Wenn der Kunden zu wenig Geld gezahlt hat:
+              setState(() { _answer = thankYou; })
+      :   (double.parse(payedmoney!)< double.parse(price!)) ?//Wenn der Kunden zu wenig Geld gezahlt hat:
             setState(() {
-              _answer = ("Vielen Dank!");
-            });
-    }
-    else {
-      if (double.parse(eingabeschein!)< double.parse(preis!)){//Wenn der Kunden zu wenig Geld gezahlt hat:
-        setState(() {
-          _answer = ("Sie müssen noch "+double.parse(calcdebt(eingabeschein!, preis)!).toStringAsFixed(2)+' '+ _currentCurrency!+ " zahlen!");
-        });
-      } else {
-        setState(() {
-          _answer = ("Sie kriegen "+double.parse(totalChange(eingabeschein!, preis!)!).toStringAsFixed(2)+' '+_currentCurrency!+ " zurück!");
-          });
-      }}
-    }
+              _answer = (openBillReminderText+double.parse(calcdebt(payedmoney!, price)!).toStringAsFixed(2)+' '+ _currentCurrency!+ "!");
+            }):setState(() {
+                _answer = (moneyBack1Text+double.parse(totalChange(payedmoney!, price!)!).toStringAsFixed(2)+' '+_currentCurrency!+ moneyBack2Text);
+                });
+  }
+
+  void _changeResult() {
+    selectCurrency();
+    setPayedMoneyNotNull();
+    setPriceNotNull();
+    replaceCommaWithPoint();
+    setPayedMoneyAndPriceNumeric();
+    _changeCoinsAndBills.clear();//vorherige Geld-Kombination löschen
+    checkIfEnoughPayedAndThenChangeComposition();
+    replyToCustomer(_payedMoney, _price, _answer);
   }
 
   _resetFunction(){
@@ -172,10 +136,6 @@ void _changeResult() {
          builder: (BuildContext context) => super.widget)
     );
   }
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -220,11 +180,11 @@ void _changeResult() {
                           SizedBox(
                             width: MediaQuery.of(context).size.width * .4,
                       height: MediaQuery.of(context).size.width * .09,
-                            child:  Text('Preis in '+_currentCurrency!+':', style: textStyle,)),
+                            child:  Text(instructionPriceText+_currentCurrency!+':', style: textStyle,)),
                           SizedBox(
                             width: MediaQuery.of(context).size.width * .4,
                       height: MediaQuery.of(context).size.width * .09,
-                            child:  Text('Eingabe in '+_currentCurrency!+':', style: textStyle,)),
+                            child:  Text(instructionPayedText+_currentCurrency!+':', style: textStyle,)),
                     ],),
 
                     Column(children: [

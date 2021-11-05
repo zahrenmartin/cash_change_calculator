@@ -18,6 +18,18 @@ const textStyleAppBar =
 
 const titleAppBar = 'Change Calculator';
 
+const thankYou = "Thank you!";
+
+const errorText = "Your text entry is incorrect.";
+
+const openBillReminderText = "You still have to pay ";
+
+const moneyBack1Text = "You get ";
+const moneyBack2Text = " back!";
+
+const instructionPriceText = "Price in ";
+const instructionPayedText = "Payed in ";
+
 
 const textStyle =
     TextStyle(color: Colors.black, fontWeight: FontWeight.normal, fontSize: 16);
